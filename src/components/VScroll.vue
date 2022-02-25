@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { requestAnimationFrame } from "@/helpers";
-import { Options } from "./types";
+import { ref, onMounted, onUnmounted } from "vue";
+import { requestAnimationFrame, debounced } from "@/helpers";
+
 const props = defineProps<{
-  options: Options;
+  count: number;
   getData: Function;
 }>();
 
-const { count, amount, tolerance } = props.options;
+const { count } = props;
 const itemHeight = 20;
+const tolerance = 2;
 
-const viewport = ref<HTMLDivElement>();
-const items = ref(props.getData(1, amount));
-
-const viewportHeight = amount * itemHeight;
+const viewport = ref();
+const amount = ref();
+const items = ref([]);
 const toleranceHeight = tolerance * itemHeight;
 
 const totalHeight = count * itemHeight;
@@ -22,18 +22,34 @@ const afterHeight = ref(totalHeight - items.value.length * itemHeight);
 
 const onScroll = requestAnimationFrame(({ target: { scrollTop } }: any) => {
   const from = Math.floor((scrollTop - toleranceHeight) / itemHeight);
-  const offset = amount + 2 * tolerance;
+  const offset = amount.value + 2 * tolerance;
+
   items.value = props.getData(from, offset);
   beforeHeight.value = Math.max(from * itemHeight, 0);
   afterHeight.value = Math.max(totalHeight - (from + offset) * itemHeight, 0);
 });
+
+const onResize = debounced(() => {
+  const height = viewport.value.clientHeight;
+  amount.value = Math.floor(height / itemHeight);
+
+  items.value = props.getData(0, amount.value);
+})
+const resizeObserver = new ResizeObserver(onResize);
+
+onMounted(() => {
+  resizeObserver.observe(viewport.value);
+});
+
+onUnmounted(() => {
+  resizeObserver.disconnect();
+})
 </script>
 
 <template>
   <div
     ref="viewport"
     :class="$style.viewport"
-    :style="{ height: `${viewportHeight}px` }"
     @scroll.passive="onScroll"
   >
     <div :style="{ height: `${beforeHeight}px` }" />
@@ -51,5 +67,8 @@ const onScroll = requestAnimationFrame(({ target: { scrollTop } }: any) => {
 <style lang="scss" module>
 .viewport {
   overflow: auto;
+  height: 100px;
+
+  resize: vertical;
 }
 </style>
