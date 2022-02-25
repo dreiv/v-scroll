@@ -18,16 +18,14 @@ const items = ref([]);
 const toleranceHeight = tolerance * itemHeight;
 
 const totalHeight = count * itemHeight;
-const beforeHeight = ref(0);
-const afterHeight = ref(totalHeight - items.value.length * itemHeight);
+const offsetHeight = ref(0);
 
 const onScroll = requestAnimationFrame(({ target: { scrollTop } }: any) => {
   from.value = Math.floor((scrollTop - toleranceHeight) / itemHeight);
   const offset = amount.value + 2 * tolerance;
 
   items.value = props.getData(from.value, offset);
-  beforeHeight.value = Math.max(from.value * itemHeight, 0);
-  afterHeight.value = Math.max(totalHeight - (from.value + offset) * itemHeight, 0);
+  offsetHeight.value = Math.max(from.value * itemHeight, 0);
 });
 
 const onResize = debounced(() => {
@@ -35,7 +33,7 @@ const onResize = debounced(() => {
   amount.value = Math.floor(height / itemHeight);
 
   items.value = props.getData(from.value, amount.value);
-})
+});
 const resizeObserver = new ResizeObserver(onResize);
 
 onMounted(() => {
@@ -44,24 +42,22 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver.disconnect();
-})
+});
 </script>
 
 <template>
-  <div
-    ref="viewport"
-    :class="$style.viewport"
-    @scroll.passive="onScroll"
-  >
-    <div :style="{ height: `${beforeHeight}px` }" />
-    <div
-      :style="{ height: `${itemHeight}px` }"
-      v-for="{ index, text } in items"
-      :key="index"
-    >
-      {{ text }}
+  <div ref="viewport" :class="$style.viewport" @scroll.passive="onScroll">
+    <div :style="{ height: `${totalHeight}px` }">
+      <div :style="{ transform: `translateY(${offsetHeight}px)` }">
+        <div
+          :style="{ height: `${itemHeight}px` }"
+          v-for="{ index, text } in items"
+          :key="index"
+        >
+          {{ text }}
+        </div>
+      </div>
     </div>
-    <div :style="{ height: `${afterHeight}px` }" />
   </div>
 </template>
 

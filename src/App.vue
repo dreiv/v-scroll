@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import VScroll from "./components/VScroll.vue";
 
-const count = 150;
+const count = 500;
 
 function getData(offset: number, limit: number) {
   const data = [];
