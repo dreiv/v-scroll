@@ -7,7 +7,6 @@ const props = defineProps<{
 }>();
 
 const { count, amount, tolerance } = props.options;
-
 const itemHeight = 20;
 
 const viewport = ref<HTMLDivElement>();
@@ -17,17 +16,15 @@ const viewportHeight = amount * itemHeight;
 const toleranceHeight = tolerance * itemHeight;
 
 const totalHeight = count * itemHeight;
-const topPaddingHeight = ref(0);
-const bottomPaddingHeight = ref(totalHeight - items.value.length * itemHeight);
+const beforeHeight = ref(0);
+const afterHeight = ref(totalHeight - items.value.length * itemHeight);
 
 function onScroll({ target: { scrollTop } }: any) {
-  const index = Math.floor((scrollTop - toleranceHeight) / itemHeight);
-  items.value = props.getData(index, amount + tolerance);
-  topPaddingHeight.value = Math.max(index * itemHeight, 0);
-  bottomPaddingHeight.value = Math.max(
-    totalHeight - topPaddingHeight.value - items.value.length * itemHeight,
-    0
-  );
+  const from = Math.floor((scrollTop - toleranceHeight) / itemHeight);
+  const offset = amount + 2 * tolerance;
+  items.value = props.getData(from, offset);
+  beforeHeight.value = Math.max(from * itemHeight, 0);
+  afterHeight.value = Math.max(totalHeight - (from + offset) * itemHeight, 0);
 }
 </script>
 
@@ -38,7 +35,7 @@ function onScroll({ target: { scrollTop } }: any) {
     :style="{ height: `${viewportHeight}px` }"
     @scroll.passive="onScroll"
   >
-    <div :style="{ height: `${topPaddingHeight}px` }" />
+    <div :style="{ height: `${beforeHeight}px` }" />
     <div
       :style="{ height: `${itemHeight}px` }"
       v-for="{ index, text } in items"
@@ -46,7 +43,7 @@ function onScroll({ target: { scrollTop } }: any) {
     >
       {{ text }}
     </div>
-    <div :style="{ height: `${bottomPaddingHeight}px` }" />
+    <div :style="{ height: `${afterHeight}px` }" />
   </div>
 </template>
 
