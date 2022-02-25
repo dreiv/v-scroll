@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { requestAnimationFrame } from "@/helpers";
 import { Options } from "./types";
 const props = defineProps<{
   options: Options;
@@ -19,13 +20,13 @@ const totalHeight = count * itemHeight;
 const beforeHeight = ref(0);
 const afterHeight = ref(totalHeight - items.value.length * itemHeight);
 
-function onScroll({ target: { scrollTop } }: any) {
+const onScroll = requestAnimationFrame(({ target: { scrollTop } }: any) => {
   const from = Math.floor((scrollTop - toleranceHeight) / itemHeight);
   const offset = amount + 2 * tolerance;
   items.value = props.getData(from, offset);
   beforeHeight.value = Math.max(from * itemHeight, 0);
   afterHeight.value = Math.max(totalHeight - (from + offset) * itemHeight, 0);
-}
+});
 </script>
 
 <template>
