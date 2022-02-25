@@ -1,21 +1,30 @@
 <script setup lang="ts">
+import { Ref, ref } from "vue";
 import VScroll from "./components/VScroll.vue";
 
+const latency = () => Math.random() * 500 + 300; // simulate network latency of 300-800ms
+
 const count = 500;
+const data = Array(500).fill({ loading: true });
+const items: Ref<any[]> = ref([]);
 
 function getData(offset: number, limit: number) {
-  const data = [];
   const start = Math.max(0, offset);
-  const end = Math.min(offset + limit - 1, count);
+  const end = Math.min(offset + limit, count);
+  items.value = data.slice(start, end);
 
-  for (let i = start; i <= end; i++) {
-    data.push({ index: i, text: `item ${i}` });
-  }
+  setTimeout(() => {
+    for (let i = offset; i < offset + limit; i++) {
+      data[i] = { index: 1, text: `item ${i}` };
+    }
 
-  return data;
+    items.value = data.slice(start, end);
+  }, latency());
 }
 </script>
 
-<template><v-scroll :count="count" :get-data="getData" /></template>
+<template>
+  <v-scroll :count="count" :get-data="getData" :items="items" />
+</template>
 
 <style></style>
