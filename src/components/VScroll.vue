@@ -11,6 +11,7 @@ const { count } = props;
 const itemHeight = 20;
 const tolerance = 2;
 
+const from = ref(0);
 const viewport = ref();
 const amount = ref();
 const items = ref([]);
@@ -21,19 +22,19 @@ const beforeHeight = ref(0);
 const afterHeight = ref(totalHeight - items.value.length * itemHeight);
 
 const onScroll = requestAnimationFrame(({ target: { scrollTop } }: any) => {
-  const from = Math.floor((scrollTop - toleranceHeight) / itemHeight);
+  from.value = Math.floor((scrollTop - toleranceHeight) / itemHeight);
   const offset = amount.value + 2 * tolerance;
 
-  items.value = props.getData(from, offset);
-  beforeHeight.value = Math.max(from * itemHeight, 0);
-  afterHeight.value = Math.max(totalHeight - (from + offset) * itemHeight, 0);
+  items.value = props.getData(from.value, offset);
+  beforeHeight.value = Math.max(from.value * itemHeight, 0);
+  afterHeight.value = Math.max(totalHeight - (from.value + offset) * itemHeight, 0);
 });
 
 const onResize = debounced(() => {
   const height = viewport.value.clientHeight;
   amount.value = Math.floor(height / itemHeight);
 
-  items.value = props.getData(0, amount.value);
+  items.value = props.getData(from.value, amount.value);
 })
 const resizeObserver = new ResizeObserver(onResize);
 
