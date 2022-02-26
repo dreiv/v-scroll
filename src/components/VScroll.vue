@@ -67,7 +67,7 @@ onUnmounted(() => {
 <style lang="scss" module>
 .viewport {
   overflow: auto;
-  height: 300px;
+  height: 600px;
 
   resize: vertical;
 }
