@@ -5,11 +5,11 @@ import VScroll from "./components/VScroll.vue";
 const latency = () => Math.random() * 500 + 300; // simulate network latency of 300-800ms
 
 const count = 500;
-const data = Array(500).fill({ loading: true });
+const data: any[] = Array.from({ length: 500 }, (_, index) => ({ key: index }));
 const items: Ref<any[]> = ref([]);
 
 let timeout: any;
-function getData(offset: number, limit: number) {
+function requestItems(offset: number, limit: number) {
   clearTimeout(timeout);
   const start = Math.max(0, offset);
   const end = Math.min(offset + limit, count);
@@ -17,7 +17,7 @@ function getData(offset: number, limit: number) {
 
   timeout = setTimeout(() => {
     for (let i = offset; i < offset + limit; i++) {
-      data[i] = { index: 1, text: `item ${i}` };
+      data[i].text = `item ${i}`;
     }
 
     items.value = data.slice(start, end);
@@ -26,7 +26,14 @@ function getData(offset: number, limit: number) {
 </script>
 
 <template>
-  <v-scroll :count="count" :get-data="getData" :items="items" />
+  <v-scroll
+    :count="count"
+    :request-items="requestItems"
+    :items="items"
+    :itemHeight="20"
+    v-slot="{ item: { text } }"
+  >
+    <template v-if="!text">loading...</template>
+    <template v-else>{{ text }}</template>
+  </v-scroll>
 </template>
-
-<style></style>
