@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { requestAnimationFrame, debounced } from "@/helpers";
+import type { Direction } from "./types";
 
 const props = defineProps<{
   count: number;
@@ -20,18 +21,21 @@ const toleranceHeight = tolerance * itemHeight;
 const totalHeight = count * itemHeight;
 const offsetHeight = ref(0);
 
+let lastScrollTop = 0;
 const onScroll = requestAnimationFrame(({ target: { scrollTop } }: any) => {
   from.value = Math.floor((scrollTop - toleranceHeight) / itemHeight);
   const offset = amount.value + 2 * tolerance;
+  const dirrection: Direction = scrollTop > lastScrollTop ? "down" : "up";
 
-  props.requestItems(from.value, offset);
+  props.requestItems(from.value, offset, dirrection);
   offsetHeight.value = Math.max(from.value * itemHeight, 0);
+  lastScrollTop = Math.max(scrollTop, 0); // For Mobile or negative scrolling
 });
 
 const onResize = debounced(() => {
   amount.value = Math.floor(viewport.value.clientHeight / itemHeight);
 
-  props.requestItems(from.value, amount.value);
+  props.requestItems(from.value, amount.value, "down");
 });
 
 const resizeObserver = new ResizeObserver(onResize);
@@ -63,7 +67,7 @@ onUnmounted(() => {
 <style lang="scss" module>
 .viewport {
   overflow: auto;
-  height: 100px;
+  height: 300px;
 
   resize: vertical;
 }
