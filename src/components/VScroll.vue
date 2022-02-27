@@ -12,30 +12,29 @@ const props = defineProps<{
 
 const { count, itemHeight } = props;
 const tolerance = 2;
-
-const viewport = ref();
-const from = ref(0);
-const amount = ref();
 const toleranceHeight = tolerance * itemHeight;
-
 const totalHeight = count * itemHeight;
+const viewport = ref();
+const amount = ref();
+const offset = ref(0);
 const offsetHeight = ref(0);
 
 let lastScrollTop = 0;
 const onScroll = requestAnimationFrame(({ target: { scrollTop } }: any) => {
-  from.value = Math.floor((scrollTop - toleranceHeight) / itemHeight);
-  const offset = amount.value + 2 * tolerance;
   const dirrection: Direction = scrollTop > lastScrollTop ? "down" : "up";
-
-  props.requestItems(from.value, offset, dirrection);
-  offsetHeight.value = Math.max(from.value * itemHeight, 0);
   lastScrollTop = Math.max(scrollTop, 0); // For Mobile or negative scrolling
+
+  const limit = amount.value + 2 * tolerance;
+  offset.value = Math.floor((scrollTop - toleranceHeight) / itemHeight);
+
+  props.requestItems(offset.value, limit, dirrection);
+  offsetHeight.value = Math.max(offset.value * itemHeight, 0);
 });
 
 const onResize = debounced(() => {
   amount.value = Math.floor(viewport.value.clientHeight / itemHeight);
 
-  props.requestItems(from.value, amount.value, "down");
+  props.requestItems(offset.value, amount.value, "down");
 });
 
 const resizeObserver = new ResizeObserver(onResize);
