@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref } from "vue";
+import { Ref, ref, computed } from "vue";
 import { Direction } from "./components/types";
 import VScroll from "./components/VScroll.vue";
 
@@ -7,26 +7,29 @@ const latency = () => Math.random() * 500 + 300; // simulate network latency of 
 
 const extraItems = 100;
 const count = 10000;
-const data: any[] = Array.from({ length: count }, (_, index) => ({ key: index }));
+const data: any[] = Array.from({ length: count }, (_, index) => ({
+  key: index,
+}));
 const items: Ref<any[]> = ref([]);
 
 let timeout: any;
 function loadMore(start: number, end: number, direction: Direction) {
-   timeout = setTimeout(() => {
-      let from = start,
-        to = end;
-      if (direction === "down") {
-        to = Math.min(end + extraItems, count);
-      } else {
-        from = Math.max(0, start - extraItems);
-      }
+  timeout = setTimeout(() => {
+    let from = start,
+      to = end;
+    if (direction === "down") {
+      to = Math.min(end + extraItems, count);
+    } else {
+      from = Math.max(0, start - extraItems);
+    }
 
-      for (let i = from; i < to; i++) {
-        data[i].text = `item ${i}`;
-      }
+    for (let i = from; i < to; i++) {
+      data[i].group = Math.floor(i / 25);
+      data[i].text = `item ${i}`;
+    }
 
-      items.value = data.slice(start, end);
-    }, latency());
+    items.value = data.slice(start, end);
+  }, latency());
 }
 
 function requestItems(offset: number, limit: number, direction: Direction) {
@@ -35,21 +38,39 @@ function requestItems(offset: number, limit: number, direction: Direction) {
   const end = Math.min(offset + limit, count);
   items.value = data.slice(start, end);
 
-  if (items.value.find(({text}) => !text)) {
-   loadMore(start, end, direction)
+  if (items.value.find(({ text }) => !text)) {
+    loadMore(start, end, direction);
   }
 }
+
+const groupedItems = computed(() =>
+  items.value.map((item, index) => ({
+    ...item,
+    ...(item.text &&
+      item.group !== items.value[index - 1]?.group && { isHeader: true }),
+  }))
+);
 </script>
 
 <template>
   <v-scroll
     :count="count"
     :request-items="requestItems"
-    :items="items"
+    :items="groupedItems"
     :itemHeight="20"
-    v-slot="{ item: { text } }"
+    v-slot="{ item: { text, group, isHeader } }"
   >
     <template v-if="!text">loading...</template>
+    <div v-if="isHeader" :class="$style.header">group {{ group }}</div>
     <template v-else>{{ text }}</template>
   </v-scroll>
 </template>
+
+<style lang="scss" module>
+.header {
+  position: sticky;
+  top: 0;
+
+  background-color: lightblue;
+}
+</style>
