@@ -86,6 +86,6 @@ const maybeGroupedItems = computed(() =>
   position: sticky;
   top: 0;
 
-  background-color: lightblue;
+  background-color: lightyellow;
 }
 </style>
