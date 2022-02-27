@@ -58,11 +58,19 @@ const groupedItems = computed(() =>
     :request-items="requestItems"
     :items="groupedItems"
     :itemHeight="20"
-    v-slot="{ item: { text, group, isHeader } }"
+    v-slot="{ item: { text, group, isHeader, itemHeight } }"
   >
-    <template v-if="!text">loading...</template>
-    <div v-if="isHeader" :class="$style.header">group {{ group }}</div>
-    <template v-else>{{ text }}</template>
+    <div
+      v-if="isHeader"
+      :style="{ height: `${itemHeight}px` }"
+      :class="$style.header"
+    >
+      <div>group {{ group }}</div>
+    </div>
+    <div :style="{ height: `${itemHeight}px` }">
+      <template v-if="!text">🌌loading...</template>
+      <template v-else>{{ text }}</template>
+    </div>
   </v-scroll>
 </template>
 

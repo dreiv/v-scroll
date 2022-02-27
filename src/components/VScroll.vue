@@ -51,15 +51,10 @@ onUnmounted(() => {
 <template>
   <div ref="viewport" :class="$style.viewport" @scroll.passive="onScroll">
     <div :style="{ height: `${totalHeight}px` }">
-      <div :style="{ transform: `translateY(${offsetHeight}px)` }">
-        <div
-          :style="{ height: `${itemHeight}px` }"
-          v-for="item in items"
-          :key="item.key"
-        >
-          <slot :item="item" />
-        </div>
-      </div>
+      <div :style="{ height: `${offsetHeight}px` }" />
+      <template v-for="item in items" :key="item.key">
+        <slot :item="item" />
+      </template>
     </div>
   </div>
 </template>
